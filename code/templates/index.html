@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>HR Water Levels</title>
+        <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+
+        <link href="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.css" rel="stylesheet">
+        <script src="https://api.mapbox.com/mapbox-gl-js/v2.11.0/mapbox-gl.js"></script>
+        <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 30px; bottom: 30px; left: 30px; right: 30px}
+        </style>
+    </head>
+<body>
+    <style>
+            .mapboxgl.popup {
+                border-radius: 10px;
+                border-color: orange;
+                border-style: solid;
+            }
+
+            .mapboxgl-popup-content {
+                    max-height: 400px;
+                    max-width: 600px; 
+                    min-width: 600px;
+                    min-height: 400px;
+                    
+                    padding:4px;
+                    
+                    border-style: solid;
+                    font-family: 'Open Sans', sans-serif;
+                    font-weight: bold;
+                    font-size: 8px;   
+                    padding:0; 
+                    border-radius: 10px;
+                    border-color: rgb(40, 23, 71);
+                }
+
+            /*.container {
+                position:relative;
+            } */
+
+            .text_box {
+                position: fixed;
+                z-index: 5;
+                top: 50px;
+                left: 50px;
+                width: 200px;
+                height: 50px;
+                background-color: azure;
+                border-radius: 10px;
+                padding-top: 5px;
+                padding-left: 5px;
+                font-family: 'Open Sans', sans-serif;
+                font-weight: bold;
+                font-size: 18px;   
+            }
+            .text_popup {
+                position: relative;
+                
+                top: 10px;
+                left: 20px;
+                bottom: 10px;
+
+
+
+                padding-top: 5px;
+                padding-left: 5px;
+                padding-bottom: 10px;
+                font-family: 'Open Sans', sans-serif;
+                font-weight: bold;
+                font-size: 30px;  
+                color: #172273
+            }
+    </style>
+    <div class="container">
+        <a style="display:block" href="https://github.com/chris-machado/Hampton_Roads_Tide_App">
+            <div class="text_box">
+                
+                <div id="workings">Click Here to See How It Works</div>
+            </div>
+        </a>
+        <div id="map"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.1.2/chart.umd.js"></script>
+    <script>
+        mapboxgl.accessToken = 'pk.************';  // Please use your own access token
+        const map = new mapboxgl.Map({
+            container: 'map',
+            style: 'mapbox://styles/mapbox/outdoors-v12',
+            center: [-76.2170,37.0281],
+            zoom: 9
+        });
+
+        map.on('load', () => {
+            map.addSource('places', {
+                'type': 'geojson',
+                'data': {
+                    'type': 'FeatureCollection',
+                    'features': [
+                    {
+                        'type': 'Feature',
+                        'properties': {
+                            'station_name': 'Sewells Point',
+                            'station_id':'8638610',
+                            'description':
+                            '<div class="text_popup"> Sewells Point </div><canvas id="myChart" width="600" height="350"></canvas>',
+                        },
+                        'geometry': {
+                            'type': 'Point',
+                            'coordinates': [-76.3287, 36.9427]
+                        }
+                    },
+                    {
+                        'type': 'Feature',
+                        'properties': {
+                            'station_name': 'Money Point',
+                            'station_id': '8639348',
+                            'description':
+                            '<div class="text_popup"> Money Point </div><canvas id="myChart" width="600" height="350"></canvas>',
+                            },
+                            'geometry': {
+                                'type': 'Point',
+                                'coordinates': [-76.3019, 36.7782]
+                            }
+                    },
+                    {
+                        'type': 'Feature',
+                        'properties': {
+                            'station_name': 'Kiptopeke',
+                            'station_id': '8632200',
+                            'description':
+                            '<div class="text_popup"> Kiptopeke </div><canvas id="myChart" width="600" height="350"></canvas>',
+                        },
+                        'geometry': {
+                            'type': 'Point',
+                            'coordinates': [-75.9884, 37.1652]
+                        }
+                    },
+                    {
+                        'type': 'Feature',
+                        'properties': {
+                            'station_name':'Chesapeake Bay Bridge Tunnel',
+                            'station_id': '8638901',
+                            'description':
+                            '<div class="text_popup"> Chesapeake Bay Bridge Tunnel </div><canvas id="myChart" width="600" height="350"></canvas>',
+                        },
+                        'geometry': {
+                            'type': 'Point',
+                            'coordinates': [-76.0833, 37.0329]
+                        }
+                    },
+                    {
+                        'type': 'Feature',
+                        'properties': {
+                            'station_name': 'Yorktown USCG Training Center',
+                            'station_id': '8637689',
+                            'description':
+                            '<div class="text_popup"> Yorktown USCG Training Center </div><canvas id="myChart" width="600" height="350"></canvas>',
+                        },
+                        'geometry': {
+                            'type': 'Point',
+                            'coordinates': [-76.4788, 37.2265]
+                        }
+                    }
+                
+            
+                ]
+            }
+        });
+        // Add a layer showing the places.
+        map.addLayer({
+            'id': 'places',
+            'type': 'circle',
+            'source': 'places',
+            'paint': {
+                'circle-color': 'red',
+                'circle-radius': 10,
+                'circle-stroke-width': 2,
+                'circle-stroke-color': 'black'
+            }
+        });
+
+        // Create a popup, but don't add it to the map yet.
+        const popup = new mapboxgl.Popup({
+            closeButton: false,
+            closeOnClick: false    
+        });
+
+
+        map.on('mouseover', 'places', (e) => {
+            // Change the cursor style as a UI indicator.
+            map.getCanvas().style.cursor = 'pointer';
+            
+            // Copy coordinates array.
+            const coordinates = e.features[0].geometry.coordinates.slice();
+            const description = e.features[0].properties.description;
+            const station_id = e.features[0].properties.station_id;
+            const station_name = e.features[0].properties.station_name;
+            
+            // Ensure that if the map is zoomed out such that multiple
+            // copies of the feature are visible, the popup appears
+            // over the copy being pointed to.
+            while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+                coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+            } 
+
+            // Populate the popup and set its coordinates
+            // based on the feature found.
+            //popup_element = popup.setLngLat(coordinates).setHTML(description);
+            popup_element = popup.setLngLat(coordinates).setHTML(description);
+            
+            popup_element.addTo(map);
+            tides(station_id, station_name);
+        ////////////////
+            async function tides(station_id, station_name) {
+                let url_str = "http://ec2-18-233-120-8.compute-1.amazonaws.com:8080/get?station=" + station_id;
+                const response = await fetch(url_str);
+                const obs = await response.json();
+                const data = {};
+                    for (let t in obs) {
+                        let dt = t.slice(5);
+                        data[dt] = obs[t];
+                    } 
+
+                const ctx = document.getElementById('myChart');
+
+                chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: [{
+                    label: 'Water Level (MLLW)',
+                    data: data,
+                    borderColor: '#783f24',
+                    backgroundColor: '#de1010',
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: '(Feet)',
+                                color: '#1e1f21',
+                                font: {
+                                    family: 'Sans',
+                                    size: 20,
+                                    // weight: 'bold',
+                                    lineHeight: 1.6,
+                                },
+                                padding: {top: 20, left: 0, right: 0, bottom: 0}
+                            }
+                        },
+                        x: {
+                            
+                            ticks: {
+                                // For a category axis, the val is the index so the lookup via getLabelForValue is needed
+                                callback: function(val, index) {
+                                    // Hide every 2nd tick label
+                                    return index % 2 === 0 ? this.getLabelForValue(val) : '';
+                                },
+                            }
+                        },
+                    spanGaps: true,
+                    showLine: true,
+                },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: '    Current Reading:  ' + Object.values(data)[Object.values(data).length - 1] + ' ft',
+                            align: 'start',
+                            padding: {
+                                top: 10,
+                                bottom: 5,
+                            },
+                            color: '#35374a',
+                            font: {
+                                    family: 'Verdana',
+                                    size: 20,
+                                    //weight: 'bold',
+                                    lineHeight: 1.2
+                            },
+                }
+            }
+                }});
+            }
+        });
+
+        map.on('click', () => {
+            map.getCanvas().style.cursor = '';
+            popup.remove();
+            chart.destroy();
+        });
+
+        });
+
+
+  
+    </script>
+    </body>
+</html>
