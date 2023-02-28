@@ -1,5 +1,5 @@
 # Hampton_Roads_Tide_App
-A simple web server with API to show real-time tidal data for the Hampton Roads Virginia region. 
+A simple web server with an API to show real-time tidal data for the Hampton Roads Virginia region. 
 
 The intent of this project is two-fold. First, to build a data pipeline using AWS services. And secondly, to create an interactive web experience. 
 
