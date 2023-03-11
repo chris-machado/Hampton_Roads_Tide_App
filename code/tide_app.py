@@ -53,17 +53,35 @@ def read_database_by_station():
     dt = datetime.datetime.now() - datetime.timedelta(days=4)
     dt = dt.strftime('%Y-%m-%d %H:%M')
 
-    response = table.scan(
-        FilterExpression=Attr('id').eq(str(id_num)) & Attr('time').gt(dt)
-    )
-    table = {item['time']: float(item['water_level']) for item in response['Items']} 
+    lastEvaluatedKey = None
+    Table = {}
+    while True:
+        if lastEvaluatedKey == None:
+            response = table.scan(
+                FilterExpression=Attr('id').eq(str(id_num)) & Attr('time').gt(dt)
+            )
+        else:
+            response = table.scan(
+                ExclusiveStartKey=lastEvaluatedKey, FilterExpression=Attr('id').eq(str(id_num)) & Attr('time').gt(dt)
+            )
+        for item in response['Items']:
+            Table[item['time']] = float(item['water_level'])
+        #table = {item['time']: float(item['water_level']) for item in response['Items']} 
+        #print(scan)
+
+        if 'LastEvaluatedKey' in response:
+            lastEvaluatedKey = response['LastEvaluatedKey']
+        else:
+            break
+
+    
 
     data = {}
-    for time in table.keys():
+    for time in Table.keys():
         utc = datetime.datetime.strptime(time, "%Y-%m-%d %H:%M")
         utc = utc.replace(tzinfo=pytz.utc)
         est_edt = utc.astimezone(pytz.timezone('US/Eastern'))
-        data[datetime.datetime.strftime(est_edt, '%Y-%m-%d %H:%M')] = table[time]
+        data[datetime.datetime.strftime(est_edt, '%Y-%m-%d %H:%M')] = Table[time]
     return make_response(jsonify(data))
 
 if __name__ == "__main__":
