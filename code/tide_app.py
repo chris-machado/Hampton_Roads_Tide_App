@@ -66,15 +66,11 @@ def read_database_by_station():
             )
         for item in response['Items']:
             Table[item['time']] = float(item['water_level'])
-        #table = {item['time']: float(item['water_level']) for item in response['Items']} 
-        #print(scan)
 
         if 'LastEvaluatedKey' in response:
             lastEvaluatedKey = response['LastEvaluatedKey']
         else:
-            break
-
-    
+            break  
 
     data = {}
     for time in Table.keys():
